@@ -27,7 +27,6 @@ class MPERunner(MlpRunner):
         self.start = time.time()
         self.log_clear()
         self.y = []
-        self.y1 = []
 
     @torch.no_grad()
     def eval(self):
@@ -42,8 +41,7 @@ class MPERunner(MlpRunner):
                 eval_infos = env_info
                 # convert scalar to list for average_episode_rewards
                 eval_infos['average_episode_rewards'] = [eval_infos['average_episode_rewards']]
-                #
-                eval_infos['r_coop'] = [eval_infos['r_coop']]
+
             else:
                 for k, v in env_info.items():
                     if type(v) != list:
@@ -60,12 +58,8 @@ class MPERunner(MlpRunner):
             if 'average_episode_rewards' in suffix_k:
                 print(suffix_k + " is " + str(v))
         self.y.append(env_info['average_episode_rewards'])
-        #
-        self.y1.append(env_info['r_coop'])
 
         self.save_variable(self.y, 'new18_y')
-        #
-        self.save_variable(self.y1, 'new18_y1')
 
         plt.figure()
         plt.plot(range(len(self.y)), self.y)
@@ -134,7 +128,7 @@ class MPERunner(MlpRunner):
             env_acts = np.split(acts_batch, n_rollout_threads)
 
             # env step and store the relevant episode information
-            next_obs, rewards, _, dones, infos = env.step(env_acts)
+            next_obs, rewards, dones, infos = env.step(env_acts)
 
             episode_rewards.append(rewards)
             dones_env = np.all(dones, axis=1)
@@ -240,8 +234,6 @@ class MPERunner(MlpRunner):
 
         # [agents, parallel envs, dim]
         episode_rewards = []
-        #
-        r_coop = []
         step_obs = {}
         step_share_obs = {}
         step_acts = {}
@@ -289,11 +281,10 @@ class MPERunner(MlpRunner):
                 env_acts.append(env_act)
 
             # env step and store the relevant episode information
-            next_obs, rewards, r, dones, infos = env.step(env_acts)
+            next_obs, rewards, dones, infos = env.step(env_acts)
 
             episode_rewards.append(rewards)
-            #
-            r_coop.append(r)
+
             dones_env = np.all(dones, axis=1)
 
             if explore and n_rollout_threads == 1 and np.all(dones_env):
@@ -366,13 +357,8 @@ class MPERunner(MlpRunner):
         episode_rewards = np.array(episode_rewards)
         average_episode_rewards = np.sum(episode_rewards) / n_rollout_threads / self.episode_length
         # average_episode_rewards = np.mean(np.sum(episode_rewards, axis=0))
-        #
-        r_coop = np.array(r_coop)
-        r_coop = np.sum(r_coop) / n_rollout_threads / self.episode_length
 
         env_info['average_episode_rewards'] = average_episode_rewards
-        #
-        env_info['r_coop'] = r_coop
 
         return env_info
 
