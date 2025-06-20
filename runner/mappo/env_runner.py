@@ -49,6 +49,8 @@ class EnvRunner(Runner):
 
                 # Obser reward and next obs
                 obs, rewards, dones, infos = self.envs.step(actions_env)
+                if self.all_args.environment_name == "ReplenishmentEnv":
+                    rewards = np.sum(rewards, axis=2)
 
                 # time.sleep(0.1)
                 # self.envs.render()
@@ -303,13 +305,8 @@ class EnvRunner(Runner):
                 actions_env.append(one_hot_action_env)
             # eval_temp_actions_env = np.array(eval_temp_actions_env).transpose(1, 0)
             eval_obs, eval_rewards, eval_dones, eval_infos = self.envs.step(actions_env)
-            # [envs, agents, dim]
-            # eval_actions_env = []
-            # for i in range(self.n_eval_rollout_threads):
-            #     eval_one_hot_action_env = []
-            #     for eval_temp_action_env in eval_temp_actions_env:
-            #         eval_one_hot_action_env.append(eval_temp_action_env[i])
-            #     eval_actions_env.append(eval_one_hot_action_env)
+            if self.all_args.environment_name == "ReplenishmentEnv":
+                eval_rewards = np.sum(eval_rewards, axis=2)
 
             # Obser reward and next obs
             # eval_obs, eval_rewards, eval_dones, eval_infos = self.eval_envs.step(eval_actions_env)
@@ -319,13 +316,13 @@ class EnvRunner(Runner):
         eval_episode_rewards = np.sum(eval_episode_rewards) / self.n_rollout_threads / self.episode_length
 
         self.y.append(eval_episode_rewards)
-        save_variable(self.y, 'new54_y')
+        save_variable(self.y, '_y')
 
         plt.figure()
         plt.plot(range(len(self.y)), self.y)
         plt.xlabel('episode')
         plt.ylabel('average returns')
-        plt.savefig(self.save_path + '/pltnew54.png', format='png')
+        plt.savefig(self.save_path + '/plt.png', format='png')
         plt.close("all")
         print("eval average episode rewards : " + str(eval_episode_rewards))
 

@@ -49,6 +49,8 @@ class EnvRunner(Runner):
                 # Obser reward and next obs
 
                 obs, rewards, dones, infos = self.envs.step(actions_env)
+                if self.all_args.environment_name == "ReplenishmentEnv":
+                    rewards = np.sum(rewards, axis=2)
 
                 values, rnn_states_critic = self.get_value(step, rewards)
 
@@ -70,6 +72,8 @@ class EnvRunner(Runner):
                 # insert data into buffer
                 self.insert(data)
             rewards = self.get_next_rewards(self.episode_length)
+            if self.all_args.environment_name == "ReplenishmentEnv":
+                rewards = np.sum(rewards, axis=2)
 
             # compute return and update network
             self.compute(rewards)
@@ -351,6 +355,8 @@ class EnvRunner(Runner):
                 actions_env.append(one_hot_action_env)
 
             eval_obs, eval_rewards, eval_dones, eval_infos = self.envs.step(actions_env)
+            if self.all_args.environment_name == "ReplenishmentEnv":
+                eval_rewards = np.sum(eval_rewards, axis=2)
 
             # Obser reward and next obs
             # eval_obs, eval_rewards, eval_dones, eval_infos = self.eval_envs.step(eval_actions_env)
@@ -363,12 +369,12 @@ class EnvRunner(Runner):
 
         self.y.append(eval_episode_rewards)
 
-        save_variable(self.y, 'new92_y')
+        save_variable(self.y, 'y')
         plt.figure()
         plt.plot(range(len(self.y)), self.y)
         plt.xlabel('episode')
         plt.ylabel('average returns')
-        plt.savefig(self.save_path + '/pltnew92.png', format='png')
+        plt.savefig(self.save_path + '/plt.png', format='png')
         plt.close("all")
         print("eval average episode rewards : " + str(eval_episode_rewards))
 

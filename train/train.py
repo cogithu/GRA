@@ -26,12 +26,14 @@ def make_train_env(all_args):
             # TODO Important, here you can choose continuous or discrete action space by uncommenting the above two lines or the below two lines.
             if all_args.environment_name =="resource_allocation":
                 import envs.resource_allocation as environment
+                scenario = environment.load(all_args.scenario_name + ".py").Scenario()
+                world = scenario.make_world()
             if all_args.environment_name =="mpe":
                 import envs.mpe as environment
+                scenario = environment.load(all_args.scenario_name + ".py").Scenario()
+                world = scenario.make_world()
             # load scenario from script
-            scenario = environment.load(all_args.scenario_name + ".py").Scenario()
 
-            world = scenario.make_world()
             # scenario = Scenario()
             if all_args.environment_name == "resource_allocation":
                 from envs.resource_allocation.environment import EnvCore
@@ -39,8 +41,15 @@ def make_train_env(all_args):
             if all_args.environment_name == "mpe":
                 from envs.mpe.environment import MultiAgentEnv
                 env = MultiAgentEnv(world, scenario.reset_world, scenario.reward, scenario.observation)
+            if all_args.environment_name == "ReplenishmentEnv":
+                from envs.ReplenishmentEnv.replenishment_env import ReplenishmentEnv
+                if all_args.scenario_name == "4 warehouses":
+                    config_path = '../envs/ReplenishmentEnv/config/demo3.yml'
+                if all_args.scenario_name == "9 warehouses":
+                    config_path = '../envs/ReplenishmentEnv/config/demo9.yml'
+                env = ReplenishmentEnv(config_path)
 
-            # from envs.env_discrete import DiscreteActionEnv
+                # from envs.env_discrete import DiscreteActionEnv
 
             # env = DiscreteActionEnv()
 
@@ -48,7 +57,7 @@ def make_train_env(all_args):
             return env
 
         return init_env
-    if all_args.environment_name == "mpe":
+    if all_args.environment_name == "mpe" or all_args.environment_name == "ReplenishmentEnv":
         return DummyVecEnv([get_env_fn(i) for i in range(all_args.n_rollout_threads)])
     elif all_args.environment_name == "resource_allocation":
         return DummyVecEnv_ra([get_env_fn(i) for i in range(all_args.n_rollout_threads)])
@@ -96,6 +105,12 @@ def parse_args(args, parser):
     if all_args.scenario_name == "encircle20":
         num_agents = 20
         parser.add_argument("--episode_length", type=int, default=50, help="Max length for any episode")
+    if all_args.scenario_name == "4 warehouses":
+        num_agents = 4
+        parser.add_argument("--episode_length", type=int, default=100, help="Max length for any episode")
+    if all_args.scenario_name == "9 warehouses":
+        num_agents = 9
+        parser.add_argument("--episode_length", type=int, default=100, help="Max length for any episode")
     learn_index = []
     for i in range(num_agents):
         if i == 0:
@@ -125,8 +140,15 @@ def parse_args(args, parser):
     if all_args.scenario_name == "graph_based1":
         all_args.learn_index = all_args.graph_based1_learn_index
     if all_args.scenario_name == "graph_based100" or all_args.scenario_name == "encircle" \
-            or all_args.scenario_name == "encircle20":
+            or all_args.scenario_name == "encircle20" :
         all_args.learn_index = all_args.graph_based100_learn_index
+    if all_args.scenario_name == "4 warehouses":
+        all_args.learn_index = [[1], [], [6], [8], [1, 5, 6], [1, 6], [], [3, 6, 8], []]
+        # all_args.learn_index_o = [[1, 2, 3, 4, 5, 6, 7, 8], [0, 2, 3, 4, 5, 6, 7, 8], [0, 1, 3, 4, 5, 6, 7, 8], [0, 1, 2, 4, 5, 6, 7, 8],
+        #                           [0, 1, 2, 3, 5, 6, 7, 8], [0, 1, 2, 3, 4, 6, 7, 8], [0, 1, 2, 3, 4, 5, 7, 8], [0, 1, 2, 3, 4, 5, 6, 8], [0, 1, 2, 3, 4, 5, 6, 7]]
+    if all_args.scenario_name == "4 warehouses":
+        all_args.learn_index = [[1, 2, 3], [2, 3], [3], []]
+        # all_args.learn_index_o = [[1, 2, 3], [0, 2, 3], [0, 1, 3], [0, 1, 2]]
     all_args.num_agents = num_agents
     return all_args
 

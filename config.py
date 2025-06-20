@@ -159,7 +159,7 @@ def get_config():
         default="check",
         help="an identifier to distinguish different experiment.",
     )
-    parser.add_argument("--seed", type=int, default=76, help="Random seed for numpy/torch")
+    parser.add_argument("--seed", type=int, default=65, help="Random seed for numpy/torch")
     parser.add_argument(
         "--cuda",
         action="store_false",
@@ -478,8 +478,8 @@ def get_config():
         default=0.1,
         help="the play interval of each rendered image in saved video.",
     )
-    parser.add_argument("--environment_name", type=str, default="mpe", help="Which environment to run on")
-    parser.add_argument("--scenario_name", type=str, default="encircle20", help="Which scenario to run on")
+    parser.add_argument("--environment_name", type=str, default="resource_allocation", help="Which environment to run on")
+    parser.add_argument("--scenario_name", type=str, default="graph_based1", help="Which scenario to run on")
     # parser.add_argument("--num_landmarks", type=int, default=0)
     # parser.add_argument("--num_agents", type=int, default=9, help="number of players")
 
