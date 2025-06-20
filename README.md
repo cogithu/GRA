@@ -22,5 +22,5 @@ Here are some crucial arguments that you might need to set:
 For instance, if you wish to use the `gra` algorithm to train agents in the `resource_allocation` environment with the `graph_based1` scenario, you can execute the following command:
 
 ```bash
-python GRA/train/train.py --algorithm_name rmappo --environment_name resource_allocation --scenario_name graph_based1
+python GRA/train/train.py --algorithm_name gra --environment_name resource_allocation --scenario_name graph_based1
 ```
